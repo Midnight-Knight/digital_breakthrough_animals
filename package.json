@@ -1,24 +1,30 @@
 {
-  "name": "digital_breakthrough_animals",
+  "name": "my-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106",
-    "next": "15.0.3"
+    "@fontsource/inter": "^5.1.0",
+    "@phosphor-icons/react": "^2.1.7",
+    "@prismane/core": "^1.6.0",
+    "next": "14.2.17",
+    "prettier": "^3.3.3",
+    "react": "^18",
+    "react-dom": "^18",
+    "sharp": "^0.33.5",
+    "typewriter-effect": "^2.21.0"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "15.0.3"
+    "eslint-config-next": "14.2.17",
+    "typescript": "^5"
   }
 }
