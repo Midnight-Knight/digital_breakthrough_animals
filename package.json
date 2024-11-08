@@ -16,6 +16,7 @@
     "prettier": "^3.3.3",
     "react": "^18",
     "react-dom": "^18",
+    "sass": "^1.80.6",
     "sharp": "^0.33.5",
     "typewriter-effect": "^2.21.0"
   },

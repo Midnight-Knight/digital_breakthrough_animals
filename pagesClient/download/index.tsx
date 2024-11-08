@@ -16,6 +16,25 @@ export default function DownloadPage() {
         p: '3rem',
     };
 
+    function deleteFile(id: number) {
+        if (images) {
+            setImages(images.filter((_, index) => index !== id));
+        }
+    }
+
+    function addFiles(newImages: File[]) {
+        if (images) {
+            setImages([...images, ...newImages]);
+        }
+    }
+
+    useEffect(() => {
+        if (images && images.length === 0)
+        {
+            setImages(null);
+        }
+    }, [images]);
+
     return (
         <Flex {...style} direction="column" justify={'start'} align={'start'}>
             <SegmentedField
@@ -30,9 +49,7 @@ export default function DownloadPage() {
                 ]}
             />
             {value === 'api' && <ApiBlock />}
-            {value === 'form' && (images ? <Editor images={images} /> : <FormDownload setImages={setImages} />)}
+            {value === 'form' && (images ? <Editor addImages={addFiles} deleteFile={deleteFile} images={images} /> : <FormDownload setImages={setImages} />)}
         </Flex>
     );
 }
-
-// <Box w={'100%'} mih={'70vh'} bg={theme.colors.base['800']} br={'base'}></Box>

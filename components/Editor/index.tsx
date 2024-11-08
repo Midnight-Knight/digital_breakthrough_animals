@@ -1,29 +1,36 @@
-import {AspectRatio, Center, Flex, Grid, usePrismaneTheme} from '@prismane/core';
-import Image from "next/image";
-import {useEffect, useState} from "react";
+import { AspectRatio, Flex, Grid, usePrismaneTheme, Text } from '@prismane/core';
+import { useEffect, useState } from "react";
 import getImageDimensions from "@/utils/getImageDimensions";
+import ImageGrid from "@/components/imageGrid";
+import AddImageGrid from "@/components/addImageGrid";
 
 interface Props {
-    images: File[]
+    images: File[],
+    deleteFile: (id: number) => void;
+    addImages: (newImages: File[]) => void;
 }
 
-export default function Editor({images}: Props) {
+export default function Editor({ images, deleteFile, addImages }: Props) {
     const { theme } = usePrismaneTheme();
-    const [imagesTable, setImagesTable] = useState<({status: 'loading'} | {status: 'ok', width: number, height: number, src: string})[]>(images.map(() => ({ status: 'loading' })));
+    const [statusDelete] = useState(true);
+    const [imagesTable, setImagesTable] = useState<({status: 'loading'} | {status: 'ok', width: number, height: number, src: string})[]>([]);
+
+    async function downloadImage() {
+        const array: ({status: 'loading'} | {status: 'ok', width: number, height: number, src: string})[] = [];
+        for (let i = 0; i < images.length; i++) {
+            const buffer = await getImageDimensions(images[i]);
+            array.push({ status: 'ok', width: buffer.width, height: buffer.height, src: buffer.src });
+        }
+        setImagesTable(array);
+    }
 
     useEffect(() => {
-        async function downloadImage() {
-            const array: ({status: 'loading'} | {status: 'ok', width: number, height: number, src: string})[] = [];
-            for (let i = 0; i < images.length; i++) {
-                const buffer = await getImageDimensions(images[i]);
-                array.push({ status: 'ok', width: buffer.width, height: buffer.height, src: buffer.src });
-            }
-            setImagesTable(array);
+        if (images.length > 0) {
+            downloadImage();
+        } else {
+            setImagesTable([]); // очищаем imagesTable, если images пустой
         }
-
-        downloadImage();
-    }, []);
-
+    }, [images]);
 
     return (
         <Flex
@@ -40,35 +47,32 @@ export default function Editor({images}: Props) {
                 <Flex w={'75%'}>
                     <Grid templateColumns={4} w="100%" gap={'0.5rem'}>
                         {imagesTable.map((elem, index) => elem.status === 'loading' ? (
-                            <Grid.Item key={"grid_item_"+index} w={'100%'}>
+                            <Grid.Item key={"grid_item_" + index} w={'100%'}>
                                 <AspectRatio w={'100%'} ratio="16/9">
-
+                                    {/* Загрузка */}
                                 </AspectRatio>
                             </Grid.Item>
-                                ) : (
-                             <Grid.Item key={"grid_item_"+index} w={'100%'}>
-                                <AspectRatio w={'100%'} ratio="16/9">
-                                    <Center w={'100%'} h={'100%'}>
-                                        <Image style={{width: '100%', height: '100%'}} src={{src: elem.src, width: elem.width, height: elem.height}} alt={images[index].name}/>
-                                    </Center>
-                                </AspectRatio>
+                        ) : (
+                            <Grid.Item key={"grid_item_" + index} w={'100%'}>
+                                {images[index] && (
+                                    <ImageGrid
+                                        deleteFile={deleteFile}
+                                        id={index}
+                                        image={{ src: elem.src, width: elem.width, height: elem.height }}
+                                        title={images[index].name}
+                                        statusDelete={statusDelete}
+                                    />
+                                )}
                             </Grid.Item>
                         ))}
+                        <AddImageGrid addImages={addImages} />
                     </Grid>
                 </Flex>
-                <Flex w={'25%'} direction={'column'} justify={'start'} align={'start'} gap={'1rem'} pt={'2rem'} bg={theme.colors.base['700']} br={'base'}>
-
+                <Flex w={'25%'} direction={'column'} justify={'start'} align={'start'} gap={'1rem'} p={'1rem'} bg={theme.colors.base['700']} br={'base'}>
+                    <Text as={'h2'}>Панель управления</Text>
+                    <Text as={'h4'}>Кол-во изображений: {images.length}</Text>
                 </Flex>
             </Flex>
         </Flex>
     );
 }
-
-/*<Flex direction={'column'} w={'100%'} gap={'0.5rem'} justify={'start'} align={'start'}>
-            <Text as={'h4'}>Время клипов в секундах</Text>
-            <Radio.Group name="answer" value={timeRadio} onChange={(e: ChangeEvent<HTMLInputElement>) => setTimeRadio(e.target.value)}>
-              <Radio value="true" label="Произвольное кол-во" />
-              <Radio value="false" label="Заданное кол-во" />
-            </Radio.Group>
-            <NumberField disabled={timeRadio === 'true'} value={time} onChange={(e) => setTime(Number(e.target.value))} />
-          </Flex>*/
