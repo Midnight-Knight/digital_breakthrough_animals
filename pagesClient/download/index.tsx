@@ -1,13 +1,19 @@
 'use client';
-import { Flex, SegmentedField } from '@prismane/core';
-import {useEffect, useState} from 'react';
-import ApiBlock from '@/components/API';
-import FormDownload from '@/components/FormDownload';
+import { Flex, Text } from '@prismane/core';
+import {ChangeEvent, useEffect, useState} from 'react';
+import FormDownload, {buildFileTree} from '@/components/FormDownload';
 import Editor from '@/components/Editor';
+import Typewriter from "typewriter-effect";
+
+export interface foldersType {
+    folderPath: string,
+    files: File[],
+    children: foldersType[],
+}
 
 export default function DownloadPage() {
     const [value, setValue] = useState('form');
-    const [images, setImages] = useState<File[] | null>(null);
+    const [images, setImages] = useState<foldersType[] | null>(null);
 
     const style = {
         w: '100%',
@@ -16,28 +22,118 @@ export default function DownloadPage() {
         p: '3rem',
     };
 
-    function deleteFile(id: number) {
+    function addFolder(newFolder: foldersType) {
+        if(images) {
+            const index = images.findIndex(image => image.folderPath === newFolder.folderPath);
+
+            if (index !== -1) {
+                const rootFolder = images[index];
+
+                rootFolder.files = newFolder.files;
+
+                const updatedImages = [...images];
+                updatedImages[index] = rootFolder;
+
+                setImages(updatedImages);
+            } else {
+                setImages([...images, newFolder]);
+            }
+        }
+    };
+
+    function addFiles(newImages: foldersType) {
         if (images) {
-            setImages(images.filter((_, index) => index !== id));
+            const index = images.findIndex(image => image.folderPath === "");
+
+            if (index !== -1) {
+                const rootFolder = images[index];
+
+                rootFolder.files.push(...newImages.files);
+
+                const updatedImages = [...images];
+                updatedImages[index] = rootFolder;
+
+                setImages(updatedImages);
+            } else {
+                setImages([...images, newImages]);
+            }
         }
     }
 
-    function addFiles(newImages: File[]) {
+    function deleteFileInNode(
+        folderTree: foldersType[],
+        targetFolderPath: string,
+        fileName: string
+    ): foldersType[] {
+        return folderTree
+            .map(folder => {
+                if (folder.folderPath === targetFolderPath) {
+                    // Удаляем файл из массива files
+                    const updatedFiles = folder.files.filter(file => file.name !== fileName);
+
+                    // Если нет файлов и дочерних папок, возвращаем `null` для удаления текущей папки
+                    if (updatedFiles.length === 0 && folder.children.length === 0) {
+                        return null;
+                    }
+
+                    return {
+                        ...folder,
+                        files: updatedFiles,
+                    };
+                }
+
+                // Рекурсивно обрабатываем дочерние папки
+                const updatedChildren = deleteFileInNode(folder.children, targetFolderPath, fileName);
+
+                // Если текущая папка осталась без файлов и дочерних папок после удаления, возвращаем `null`
+                if (updatedChildren.every(child => child === null) && folder.files.length === 0) {
+                    return null;
+                }
+
+                return {
+                    ...folder,
+                    children: updatedChildren.filter(child => child !== null),
+                };
+            })
+            .filter(folder => folder !== null); // Фильтруем пустые папки
+    }
+
+    function handleDeleteFile(targetFolderPath: string, fileName: string) {
         if (images) {
-            setImages([...images, ...newImages]);
+            const updatedImages = deleteFileInNode(images, targetFolderPath, fileName);
+            setImages(updatedImages);
         }
     }
+
 
     useEffect(() => {
         if (images && images.length === 0)
         {
             setImages(null);
         }
+        console.log(images);
     }, [images]);
 
     return (
         <Flex {...style} direction="column" justify={'start'} align={'start'}>
-            <SegmentedField
+            <Text cl={() => ['primary', 500]} fs={'3xl'} ta={'left'} w={'75%'} fw={'bold'}>
+                <Typewriter
+                    options={{
+                        delay: 75,
+                        loop: false,
+                    }}
+                    onInit={(typewriter) => {
+                        typewriter.typeString('Обработка изображений').start();
+                    }}
+                />
+            </Text>
+            {value === 'form' && (images ? <Editor addFolder={addFolder} addImages={addFiles} deleteFile={handleDeleteFile} images={images} /> : <FormDownload setImages={setImages} />)}
+        </Flex>
+    );
+}
+
+/*
+<SegmentedField
                 size={'md'}
                 placeholder="Выбор вариант обработки изображений"
                 label="Выбор вариант обработки изображений:"
@@ -48,8 +144,7 @@ export default function DownloadPage() {
                     { element: 'API', value: 'api' },
                 ]}
             />
-            {value === 'api' && <ApiBlock />}
-            {value === 'form' && (images ? <Editor addImages={addFiles} deleteFile={deleteFile} images={images} /> : <FormDownload setImages={setImages} />)}
-        </Flex>
-    );
-}
+{value === 'api' && <ApiBlock />}
+ */
+
+

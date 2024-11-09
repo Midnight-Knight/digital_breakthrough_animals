@@ -2,6 +2,8 @@
 import { Button, Flex, Link, Text, usePrismaneTheme } from '@prismane/core';
 import { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
+import Bear from '@/public/daniel-diesenreither-z4yzSsH5EAo-unsplash.jpg';
+import Typewriter from "typewriter-effect";
 
 interface Props {
     children: ReactNode;
@@ -15,15 +17,15 @@ export default function Template({ children }: Props): ReactNode {
         w: '100%',
         mih: '100vh',
         bg: theme.colors.base['900'],
-        pl: 260,
+        pl: 310,
     };
 
     const styleAside = {
-        w: 250,
+        w: 300,
         h: '100vh',
         p: '1rem',
         pt: '1.5rem',
-        bg: theme.colors.primary['900'],
+        bg: theme.colors.primary['900']+'88',
         gap: '1.5rem',
         t: 0,
         l: 0,
@@ -31,7 +33,6 @@ export default function Template({ children }: Props): ReactNode {
 
     const styleMain = {
         w: '100%',
-        p: '1rem',
     };
 
     const styleButton = {
@@ -40,7 +41,8 @@ export default function Template({ children }: Props): ReactNode {
 
     return (
         <Flex direction={'row'} {...styleBody}>
-            <Flex pos={'fixed'} direction={'column'} justify={'between'} {...styleAside}>
+            <Flex z={1} w={300} pos={'fixed'} h={'100vh'} t={0} l={0} style={{backgroundImage: `url(${Bear.src})`, backgroundSize: 'cover', backgroundPosition: '70%'}} />
+            <Flex z={2} pos={'fixed'} direction={'column'} justify={'between'} {...styleAside}>
                 <Flex gap="1.5rem" direction={'column'}>
                     <Text as={'h1'} cl={theme.colors.base['50']}>
                         RealityFirst
@@ -75,7 +77,11 @@ export default function Template({ children }: Props): ReactNode {
                         </Link>
                     </Flex>
                 </Flex>
-                <Flex></Flex>
+                <Flex>
+                    <Text cl={() => ['base', 50]} fs={'1xl'} ta={'left'} w={'100%'} fw={'bold'}>
+                        Автоматическая фильтрация изображений животных
+                    </Text>
+                </Flex>
             </Flex>
             <Flex {...styleMain}>{children}</Flex>
         </Flex>

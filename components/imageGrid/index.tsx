@@ -1,4 +1,4 @@
-import {AspectRatio, Icon, Text} from "@prismane/core";
+import {AspectRatio, Icon, Text, usePrismaneTheme} from "@prismane/core";
 import Image, {StaticImageData} from "next/image";
 import Style from "./style.module.scss";
 import {Trash} from "@phosphor-icons/react";
@@ -7,19 +7,20 @@ interface Props {
     title: string;
     image: StaticImageData;
     statusDelete: boolean;
-    id: number;
-    deleteFile: (id: number) => void;
+    deleteFile: () => void;
 }
 
-export default function ImageGrid({ title, image, statusDelete, id, deleteFile }: Props)
+export default function ImageGrid({ title, image, statusDelete, deleteFile }: Props)
 {
+    const { theme } = usePrismaneTheme();
+
     return (
         <AspectRatio w={'100%'} ratio="16/9">
-            <div className={Style.ImageGrid}>
+            <div className={Style.ImageGrid} style={{outlineColor: theme.colors.base['700']}}>
                 <div>
                     <div>
                         {statusDelete && (
-                            <button onClick={() => deleteFile(id)}>
+                            <button onClick={deleteFile}>
                                 <Icon size={'sm'}>
                                     <Trash/>
                                 </Icon>
