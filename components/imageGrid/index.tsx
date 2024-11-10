@@ -73,6 +73,12 @@ export default function ImageGrid({ title, image, statusDelete, deleteFile, stat
                     </Text>
                 </Modal.Header>
                 <div className={Style.Status}>
+                    {status === 'falseDetected' && (
+                        <div>
+                            <div style={{backgroundColor: red['700']}}/>
+                            <Text>Непригодное изображение</Text>
+                        </div>
+                    )}
                     {dataCords.some((elem: CssCoords) => elem.class === 1) && (
                         <div>
                             <div style={{backgroundColor: green['700']}}/>

@@ -7,6 +7,7 @@ import {foldersType} from "@/pagesClient/download";
 import AddFolderGrid from "@/components/addFolderGrid";
 import upload_image from "@/api/upload_image";
 import SendImage from "@/components/sendImage";
+import CsvSend from "@/components/csvSend";
 
 interface Props {
     images: foldersType[],
@@ -32,6 +33,7 @@ interface imageFile {
 export default function Editor({ images, deleteFile, addImages, addFolder }: Props) {
     const { theme } = usePrismaneTheme();
     const [statusDelete, setStatusDelete] = useState(true);
+    const [statusUpload, setStatusUpload] = useState(true);
     const [imagesTable, setImagesTable] = useState<imageFile[]>([]);
     const [id, setId] = useState<string | null>(null);
 
@@ -94,6 +96,8 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
             if (images.length > 0) {
                 await processFolders(images);
             }
+
+            setStatusUpload(false);
         }
 
         if (id) {
@@ -151,7 +155,7 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
             <Flex direction={'row'} w={'100%'} gap={'0.5rem'} key={folder.folderPath}>
                 <Flex w={'0.5rem'} bg={theme.colors.base['700']} br="base"/>
                 <Flex direction="column" w="100%" gap="1rem">
-                    <Text as="h3">{folder.folderPath}</Text>
+                    <Text as="h3">{folder.folderPath.split('/').pop()}</Text>
                     <Grid templateColumns={4} w="100%" gap="0.5rem">
                         {folder.files.map((file: any, index: number) =>
                             file.status === 'loading' ? (
@@ -259,6 +263,7 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                     <AddImageGrid statusDelete={statusDelete} addImages={addImages}/>
                     <AddFolderGrid statusDelete={statusDelete} addFolder={addFolder}/>
                     <SendImage statusDelete={statusDelete} setId={setId}/>
+                    <CsvSend statusDelete={statusUpload} id={id || "0"}/>
                 </Flex>
             </Flex>
         </Flex>

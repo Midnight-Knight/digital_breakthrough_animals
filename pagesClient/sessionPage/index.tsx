@@ -128,7 +128,7 @@ export default function SessionPage({ id }: Props) {
             <Flex direction={'row'} w={'100%'} gap={'0.5rem'} key={folder.folderPath}>
                 <Flex w={'0.5rem'} bg={theme.colors.base['700']} br="base"/>
                 <Flex direction="column" w="100%" gap="1rem">
-                    <Text as="h3">{folder.folderPath}</Text>
+                    <Text as="h3">{folder.folderPath.split('/').pop()}</Text>
                     <Grid templateColumns={4} w="100%" gap="0.5rem">
                         {folder.files.map((file: ImageData, index: number) =>
                             (
@@ -153,7 +153,6 @@ export default function SessionPage({ id }: Props) {
         return folder.folderPath === '' ? (
             <Flex direction={'row'} w={'100%'} gap={'0.5rem'} key={folder.folderPath}>
                 <Flex direction="column" w="100%" gap="1rem">
-                    <Text as="h3">{'Изображения'}</Text>
                     <Grid templateColumns={4} w="100%" gap="0.5rem">
                         {folder.files.map((file: ImageData, index: number) =>
                             (
@@ -212,7 +211,8 @@ export default function SessionPage({ id }: Props) {
                     <Progress value={0}
                         // @ts-ignore
                               label={"100%"} />
-                    {goodImages.map((elem) => (<>{renderFiles(elem, 'trueDetected')}</>))}
+                    {goodImages.map((elem) => (<>{elem.folderPath === '' && (<Text as="h2">{'Изображения'}</Text>)}{renderFiles(elem, 'trueDetected')}</>))}
+                    {(goodImages.length !== 1 || goodImages[0].folderPath !== '') && <Text as="h2">Папки/Архивы</Text>}
                     {goodImages.map((elem) => (<>{renderFolder(elem, 'trueDetected')}</>))}
                 </Card>
             )}
@@ -224,7 +224,8 @@ export default function SessionPage({ id }: Props) {
                     <Progress value={0}
                         // @ts-ignore
                               label={"100%"} />
-                    {badImages.map((elem) => (<>{renderFiles(elem, 'nullDetected')}</>))}
+                    {badImages.map((elem) => (<>{elem.folderPath === '' && (<Text as="h2">{'Изображения'}</Text>)}{renderFiles(elem, 'nullDetected')}</>))}
+                    {(badImages.length !== 1 || badImages[0].folderPath !== '') && <Text as="h2">Папки/Архивы</Text>}
                     {badImages.map((elem) => (<>{renderFolder(elem, 'nullDetected')}</>))}
                 </Card>
             )}
@@ -236,7 +237,8 @@ export default function SessionPage({ id }: Props) {
                     <Progress value={0}
                               // @ts-ignore
                               label={"100%"} />
-                    {undetectedImages.map((elem) => (<>{renderFiles(elem, 'falseDetected')}</>))}
+                    {undetectedImages.map((elem) => (<>{elem.folderPath === '' && (<Text as="h2">{'Изображения'}</Text>)}{renderFiles(elem, 'falseDetected')}</>))}
+                    {(undetectedImages.length !== 1 || undetectedImages[0].folderPath !== '') && <Text as="h2">Папки/Архивы</Text>}
                     {undetectedImages.map((elem) => (<>{renderFolder(elem, 'falseDetected')}</>))}
                 </Card>
             )}

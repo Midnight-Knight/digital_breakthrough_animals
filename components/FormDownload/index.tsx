@@ -48,32 +48,40 @@ export async function unzipFile(file: File, path: string) {
 export default function FormDownload({ setImages }: Props) {
     const { theme } = usePrismaneTheme();
 
-    const handleFolderChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const handleFolderChange = async (event: ChangeEvent<HTMLInputElement>) => {
         try {
             const files = event.target.files;
             if (files) {
-                const allowedExtensions = ['.tif', '.jfif', '.jpeg', '.tiff', '.jpg', '.png', '.pjpeg'];
-
-                // Convert FileList to an array and filter based on allowed extensions
+                const allowedExtensions = ['.tif', '.jfif', '.jpeg', '.tiff', '.jpg', '.png', '.pjpeg', '.zip'];
                 const filteredFilesArray = Array.from(files).filter(file => {
                     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
                     return allowedExtensions.includes(fileExtension);
                 });
 
-                // Create a DataTransfer object to convert the array back to a FileList
-                const dataTransfer = new DataTransfer();
-                filteredFilesArray.forEach(file => dataTransfer.items.add(file));
+                const allFiles: { path: string, file: File }[] = [];
 
-                // Get the FileList from the DataTransfer object
-                const filteredFiles = dataTransfer.files;
+                for (const file of filteredFilesArray) {
+                    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
-                const fileTree = buildFileTreeFileList(filteredFiles);
+                    if (fileExtension === '.zip') {
+                        // Если это zip-файл, разархивируем его и добавляем файлы с правильной иерархией
+                        const extractedFiles = await unzipFile(file, file.webkitRelativePath ? file.webkitRelativePath + "/" : "");
+                        allFiles.push(...extractedFiles);
+                    } else {
+                        // Если это обычный файл, добавляем его с указанием полного пути
+                        allFiles.push({ path: file.webkitRelativePath || file.name, file });
+                    }
+                }
+
+                // Построение дерева файлов с сохранением иерархии
+                const fileTree = buildFileTreeArray(allFiles);
                 setImages(fileTree);
             }
         } catch (e) {
             console.error(e);
         }
     };
+
 
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         try {

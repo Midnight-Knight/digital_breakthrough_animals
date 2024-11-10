@@ -1,6 +1,6 @@
 import {AspectRatio, Icon, PRISMANE_COLORS, Text, usePrismaneTheme} from "@prismane/core";
 import Style from "./style.module.scss";
-import {Folder} from "@phosphor-icons/react";
+import {UploadSimple} from "@phosphor-icons/react";
 import {ChangeEvent} from "react";
 import {foldersType} from "@/pagesClient/download";
 import sessions from "@/api/sessions";
@@ -26,7 +26,7 @@ export default function SendImage({setId, statusDelete}: Props) {
                 <div>
                     <div>
                         <Icon size={'lg'}>
-                            <Folder/>
+                            <UploadSimple/>
                         </Icon>
                     </div>
                 </div>
