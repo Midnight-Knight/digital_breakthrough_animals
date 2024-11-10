@@ -1,0 +1,14 @@
+########################################
+#                                      #
+#  Перед запуском, прочитай README.md  #
+#                                      #
+########################################
+version: '3.9'
+services:
+  next:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - target: 3000
+    restart: always
