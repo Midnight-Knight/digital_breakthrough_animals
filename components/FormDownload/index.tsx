@@ -5,7 +5,6 @@ import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import Typewriter from 'typewriter-effect';
 import {foldersType} from "@/pagesClient/download";
 import JSZip from 'jszip';
-import buildFileTreeFileList from "@/utils/buildFileTree/fileList";
 import buildFileTreeArray from "@/utils/buildFileTree/array";
 
 interface Props {
@@ -18,11 +17,10 @@ export async function unzipFile(file: File, path: string) {
         const zipContent = await zip.loadAsync(file);
         const arrayFiles: {path: string, file: File}[] = [];
 
-        // Создаем массив промисов для всех файлов
         const filePromises: any[] = [];
 
         zipContent.forEach((relativePath, zipEntry) => {
-            if (!zipEntry.dir) { // Если это не директория
+            if (!zipEntry.dir) {
                 const filePromise = zipEntry.async('blob').then(fileData => {
                     const pathSegments = relativePath.split('/');
                     arrayFiles.push({path: path + relativePath, file: new File([fileData], pathSegments[pathSegments.length - 1])});
@@ -34,7 +32,6 @@ export async function unzipFile(file: File, path: string) {
             }
         });
 
-        // Дожидаемся завершения всех промисов
         await Promise.all(filePromises);
 
         return arrayFiles;
@@ -64,16 +61,13 @@ export default function FormDownload({ setImages }: Props) {
                     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
                     if (fileExtension === '.zip') {
-                        // Если это zip-файл, разархивируем его и добавляем файлы с правильной иерархией
                         const extractedFiles = await unzipFile(file, file.webkitRelativePath ? file.webkitRelativePath + "/" : "");
                         allFiles.push(...extractedFiles);
                     } else {
-                        // Если это обычный файл, добавляем его с указанием полного пути
                         allFiles.push({ path: file.webkitRelativePath || file.name, file });
                     }
                 }
 
-                // Построение дерева файлов с сохранением иерархии
                 const fileTree = buildFileTreeArray(allFiles);
                 setImages(fileTree);
             }

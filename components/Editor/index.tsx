@@ -48,11 +48,9 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                             const mlResponse = response.mlResponse?.detections.some((detection: any) => detection.class === 1) || false;
                             const detections = response.mlResponse?.detections || [];
 
-                            // Рекурсивное обновление структуры imagesTable
                             setImagesTable((prevImagesTable) => {
                                 function updateFolderStatus(folders: imageFile[]): imageFile[] {
                                     return folders.map((folderItem: any) => {
-                                        // Если совпадает путь, обновляем статус файла
                                         if (folderItem.folderPath === folder.folderPath) {
                                             return {
                                                 ...folderItem,
@@ -69,11 +67,9 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                                                         }
                                                         : f
                                                 ),
-                                                // Рекурсивно обновляем статус для детей
                                                 children: updateFolderStatus(folderItem.children),
                                             };
                                         }
-                                        // Рекурсивно проходим по остальным папкам
                                         return {
                                             ...folderItem,
                                             children: updateFolderStatus(folderItem.children),
@@ -86,7 +82,6 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                         }
                     }
 
-                    // Рекурсивная обработка дочерних папок
                     if (folder.children && folder.children.length > 0) {
                         await processFolders(folder.children);
                     }
@@ -113,7 +108,6 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
 
     async function downloadImage() {
         async function processFolder(folder: foldersType): Promise<any> {
-            // Преобразуем файлы в массив со статусом загрузки и загружаем их по мере обработки
             const files = await Promise.all(
                 folder.files.map(async (file) => {
                     const buffer = await getImageDimensions(file);
@@ -127,7 +121,6 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                 })
             );
 
-            // Обрабатываем подкаталоги рекурсивно
             const children = await Promise.all(folder.children.map(child => processFolder(child)));
 
             return {
@@ -146,7 +139,7 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
         if (images.length > 0) {
             downloadImage();
         } else {
-            setImagesTable([]); // очищаем imagesTable, если images пустой
+            setImagesTable([]);
         }
     }, [images]);
 

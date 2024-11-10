@@ -3,7 +3,6 @@ import { Button, Flex, Link, Text, usePrismaneTheme } from '@prismane/core';
 import { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import Bear from '@/public/daniel-diesenreither-z4yzSsH5EAo-unsplash.jpg';
-import Typewriter from "typewriter-effect";
 
 interface Props {
     children: ReactNode;

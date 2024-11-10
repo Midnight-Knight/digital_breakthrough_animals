@@ -15,25 +15,23 @@ export const buildFileTreeArray = (files: FileWithPath[]): foldersType[] => {
         let currentLevel = root;
         let currentPath = '';
 
-        for (let j = 0; j < pathParts.length - 1; j++) { // Проходим до предпоследней части пути
+        for (let j = 0; j < pathParts.length - 1; j++) {
             const part = pathParts[j];
             if (part === "") continue;
 
             currentPath += (currentPath ? '/' : '') + part;
 
-            // Проверяем, есть ли уже узел для текущего пути в карте
             let existingNode = folderMap.get(currentPath);
 
             if (!existingNode) {
                 existingNode = { folderPath: currentPath, files: [], children: [] };
-                folderMap.set(currentPath, existingNode); // Добавляем в карту, чтобы избежать дублирования
-                currentLevel.push(existingNode); // Добавляем в текущий уровень
+                folderMap.set(currentPath, existingNode);
+                currentLevel.push(existingNode);
             }
 
-            currentLevel = existingNode.children; // Переходим на следующий уровень
+            currentLevel = existingNode.children;
         }
 
-        // Обрабатываем сам файл, добавляя его в нужную папку
         const parentFolderPath = currentPath;
         let parentFolder = folderMap.get(parentFolderPath);
 
@@ -43,7 +41,7 @@ export const buildFileTreeArray = (files: FileWithPath[]): foldersType[] => {
             currentLevel.push(parentFolder);
         }
 
-        parentFolder.files.push(file); // Добавляем файл в папку
+        parentFolder.files.push(file);
     }
 
     return root;

@@ -30,16 +30,13 @@ export default function AddFolderGrid({addFolder, statusDelete}: Props) {
                     const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
                     if (fileExtension === '.zip') {
-                        // Если это zip-файл, разархивируем его и добавляем файлы с правильной иерархией
                         const extractedFiles = await unzipFile(file, file.webkitRelativePath ? file.webkitRelativePath + "/" : "");
                         allFiles.push(...extractedFiles);
                     } else {
-                        // Если это обычный файл, добавляем его с указанием полного пути
                         allFiles.push({ path: file.webkitRelativePath || file.name, file });
                     }
                 }
 
-                // Построение дерева файлов с сохранением иерархии
                 const fileTree = buildFileTreeArray(allFiles);
                 addFolder(fileTree[0]);
             }

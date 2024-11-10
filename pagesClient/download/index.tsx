@@ -1,6 +1,6 @@
 'use client';
 import { Flex, Text } from '@prismane/core';
-import {ChangeEvent, useEffect, useState} from 'react';
+import { useEffect, useState} from 'react';
 import FormDownload from '@/components/FormDownload';
 import Editor from '@/components/Editor';
 import Typewriter from "typewriter-effect";
@@ -78,10 +78,8 @@ export default function DownloadPage() {
         return folderTree
             .map(folder => {
                 if (folder.folderPath === targetFolderPath) {
-                    // Удаляем файл из массива files
                     const updatedFiles = folder.files.filter(file => file.name !== fileName);
 
-                    // Если нет файлов и дочерних папок, возвращаем `null` для удаления текущей папки
                     if (updatedFiles.length === 0 && folder.children.length === 0) {
                         return null;
                     }
@@ -92,10 +90,8 @@ export default function DownloadPage() {
                     };
                 }
 
-                // Рекурсивно обрабатываем дочерние папки
                 const updatedChildren = deleteFileInNode(folder.children, targetFolderPath, fileName);
 
-                // Если текущая папка осталась без файлов и дочерних папок после удаления, возвращаем `null`
                 if (updatedChildren.every(child => child === null) && folder.files.length === 0) {
                     return null;
                 }
@@ -105,7 +101,7 @@ export default function DownloadPage() {
                     children: updatedChildren.filter(child => child !== null),
                 };
             })
-            .filter(folder => folder !== null); // Фильтруем пустые папки
+            .filter(folder => folder !== null);
     }
 
     function handleDeleteFile(targetFolderPath: string, fileName: string) {

@@ -1,7 +1,8 @@
+import {SESSIONS} from "@/env";
 
 
 export default async function sessions() {
-    const response = await fetch("https://crisply-protected-ribbonfish.cloudpub.ru/images/create_package", {
+    const response = await fetch(SESSIONS, {
         method: "POST",
     });
     const data = await response.json();

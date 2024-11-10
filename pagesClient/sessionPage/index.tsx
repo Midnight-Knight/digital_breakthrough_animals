@@ -16,6 +16,7 @@ import {
     usePrismaneTheme
 } from "@prismane/core";
 import ArchiveImageGrid from "@/components/archiveImageGrid";
+import {CSV_FILE} from "@/env";
 
 interface Props {
     id: string;
@@ -197,7 +198,7 @@ export default function SessionPage({ id }: Props) {
                         </Text>
                     </Flex>
                     <Card.Footer justify="between">
-                        <Link href={`https://crisply-protected-ribbonfish.cloudpub.ru/archive/get_report?packageId=${dataSession.id}`} download underline="none">
+                        <Link href={CSV_FILE+dataSession.id} download underline="none">
                             <Button variant="primary">Скачать CSV отчёт</Button>
                         </Link>
                     </Card.Footer>

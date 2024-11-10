@@ -1,8 +1,6 @@
 import {AspectRatio, Icon, PRISMANE_COLORS, Text, usePrismaneTheme} from "@prismane/core";
 import Style from "./style.module.scss";
 import {UploadSimple} from "@phosphor-icons/react";
-import {ChangeEvent} from "react";
-import {foldersType} from "@/pagesClient/download";
 import sessions from "@/api/sessions";
 
 interface Props {

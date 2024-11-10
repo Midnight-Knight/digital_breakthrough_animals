@@ -31,11 +31,9 @@ interface CssCoords {
 function convertToCssCoords(normalizedCoords: NormalizedCoords): CssCoords {
     const { xc, yc, w, h } = normalizedCoords;
 
-    // Расчёт координат для top и left в процентах
-    const top = (yc - h / 2) * 100;  // yc - центр, отнимаем половину высоты
-    const left = (xc - w / 2) * 100; // xc - центр, отнимаем половину ширины
+    const top = (yc - h / 2) * 100;
+    const left = (xc - w / 2) * 100;
 
-    // Ширина и высота в процентах
     const width = w * 100;
     const height = h * 100;
 
