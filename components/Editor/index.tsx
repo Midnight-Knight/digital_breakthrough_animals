@@ -5,24 +5,107 @@ import ImageGrid from "@/components/imageGrid";
 import AddImageGrid from "@/components/addImageGrid";
 import {foldersType} from "@/pagesClient/download";
 import AddFolderGrid from "@/components/addFolderGrid";
+import upload_image from "@/api/upload_image";
+import SendImage from "@/components/sendImage";
 
 interface Props {
     images: foldersType[],
     deleteFile: (targetFolderPath: string, fileName: string) => void;
-    addImages: (newImages: foldersType) => void;
+    addImages: (newImages: foldersType[]) => void;
     addFolder: (newFolder: foldersType) => void;
+}
+
+export interface detectionsType {
+    xc: number;
+    yc: number;
+    w: number;
+    h: number;
+    class: number;
 }
 
 interface imageFile {
     folderPath: string,
-    files: ({ status: 'loading', title: string } | { status: 'ok', width: number, height: number, src: string, title: string })[],
+    files: ({ status: 'loading', title: string } | { status: 'ok', width: number, height: number, src: string, title: string } | {status: 'falseDetected', width: number, height: number, src: string, title: string, detections: detectionsType} | {status: 'trueDetected', width: number, height: number, src: string, title: string, detections: detectionsType} | {status: 'nullDetected', width: number, height: number, src: string, title: string, detections: detectionsType})[],
     children: imageFile[]
 }
 
 export default function Editor({ images, deleteFile, addImages, addFolder }: Props) {
     const { theme } = usePrismaneTheme();
-    const [statusDelete] = useState(true);
+    const [statusDelete, setStatusDelete] = useState(true);
     const [imagesTable, setImagesTable] = useState<imageFile[]>([]);
+    const [id, setId] = useState<string | null>(null);
+
+    useEffect(() => {
+        async function sendImage() {
+            async function processFolders(folders: foldersType[]): Promise<void> {
+                for (const folder of folders) {
+                    if (id) {
+                        for (const file of folder.files) {
+                            const response = await upload_image(id, file, folder.folderPath);
+                            const isDetected = response.mlResponse?.isDetected;
+                            const mlResponse = response.mlResponse?.detections.some((detection: any) => detection.class === 1) || false;
+                            const detections = response.mlResponse?.detections || [];
+
+                            // Рекурсивное обновление структуры imagesTable
+                            setImagesTable((prevImagesTable) => {
+                                function updateFolderStatus(folders: imageFile[]): imageFile[] {
+                                    return folders.map((folderItem: any) => {
+                                        // Если совпадает путь, обновляем статус файла
+                                        if (folderItem.folderPath === folder.folderPath) {
+                                            return {
+                                                ...folderItem,
+                                                files: folderItem.files.map((f: any) =>
+                                                    f.title === file.name
+                                                        ? {
+                                                            ...f,
+                                                            status: isDetected
+                                                                ? mlResponse
+                                                                    ? 'trueDetected'
+                                                                    : 'nullDetected'
+                                                                : 'falseDetected',
+                                                            detections: detections,
+                                                        }
+                                                        : f
+                                                ),
+                                                // Рекурсивно обновляем статус для детей
+                                                children: updateFolderStatus(folderItem.children),
+                                            };
+                                        }
+                                        // Рекурсивно проходим по остальным папкам
+                                        return {
+                                            ...folderItem,
+                                            children: updateFolderStatus(folderItem.children),
+                                        };
+                                    });
+                                }
+
+                                return updateFolderStatus(prevImagesTable);
+                            });
+                        }
+                    }
+
+                    // Рекурсивная обработка дочерних папок
+                    if (folder.children && folder.children.length > 0) {
+                        await processFolders(folder.children);
+                    }
+                }
+            }
+
+            if (images.length > 0) {
+                await processFolders(images);
+            }
+        }
+
+        if (id) {
+            setStatusDelete(false);
+            sendImage();
+        }
+    }, [id, images]);
+
+
+    useEffect(() => {
+        console.log(imagesTable);
+    }, [imagesTable]);
 
     async function downloadImage() {
         async function processFolder(folder: foldersType): Promise<any> {
@@ -80,6 +163,8 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                             ) : (
                                 <Grid.Item key={"file_" + index} w="100%">
                                     <ImageGrid
+                                        detections={file.detections ? file.detections : []}
+                                        status={file.status}
                                         deleteFile={() => deleteFile(folder.folderPath, file.title)}
                                         image={{ src: file.src, width: file.width, height: file.height }}
                                         title={file.title}
@@ -110,6 +195,8 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                             ) : (
                                 <Grid.Item key={"file_" + index} w="100%">
                                     <ImageGrid
+                                        detections={file.detections ? file.detections : []}
+                                        status={file.status}
                                         deleteFile={() => deleteFile(folder.folderPath, file.title)}
                                         image={{ src: file.src, width: file.width, height: file.height }}
                                         title={file.title}
@@ -129,6 +216,12 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
         return foundElement ? foundElement : null
     }
 
+    function checkNumberFiles(imagesTable: imageFile[]): number
+    {
+        const foundElement = imagesTable.find(image => image.folderPath === "");
+        return foundElement ? foundElement.files.length : 0;
+    }
+
     return (
         <Flex
             w="100%"
@@ -143,7 +236,7 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
         >
             <Flex w="100%" h="100%" direction="row" justify="start" align="start" gap="2rem">
                 <Flex w="75%" direction="column" gap="2rem">
-                    {getFolderPathOrEmptyArray(imagesTable) ? (<>
+                    {checkNumberFiles(imagesTable) !== 0 ? (<>
                         <Text as="h2">Изображения</Text>
                         {renderFile(getFolderPathOrEmptyArray(imagesTable) || {folderPath: '', files: [], children: []})}
                     </>) : <></>}
@@ -163,8 +256,9 @@ export default function Editor({ images, deleteFile, addImages, addFolder }: Pro
                     br="base"
                 >
                     <Text as="h2">Панель управления</Text>
-                    <AddImageGrid addImages={addImages}/>
-                    <AddFolderGrid addFolder={addFolder}/>
+                    <AddImageGrid statusDelete={statusDelete} addImages={addImages}/>
+                    <AddFolderGrid statusDelete={statusDelete} addFolder={addFolder}/>
+                    <SendImage statusDelete={statusDelete} setId={setId}/>
                 </Flex>
             </Flex>
         </Flex>

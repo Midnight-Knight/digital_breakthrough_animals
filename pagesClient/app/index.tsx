@@ -36,7 +36,7 @@ export default function AppPage() {
                             Загрузка изображений для фильтрации
                         </Button>
                     </Link>
-                    <Link w={'100%'} h={'100%'} href={'/clips'} underline="none">
+                    <Link w={'100%'} h={'100%'} href={'/archive'} underline="none">
                         <Button size="lg" br={'0.5rem'} w={'100%'} h={'100%'} variant="tertiary" cl={theme.colors.primary['400']}>
                             Архив отфильтрованных изображений
                         </Button>

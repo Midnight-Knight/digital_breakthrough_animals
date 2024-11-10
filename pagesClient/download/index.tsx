@@ -1,7 +1,7 @@
 'use client';
 import { Flex, Text } from '@prismane/core';
 import {ChangeEvent, useEffect, useState} from 'react';
-import FormDownload, {buildFileTree} from '@/components/FormDownload';
+import FormDownload from '@/components/FormDownload';
 import Editor from '@/components/Editor';
 import Typewriter from "typewriter-effect";
 
@@ -41,21 +41,31 @@ export default function DownloadPage() {
         }
     };
 
-    function addFiles(newImages: foldersType) {
+    function addFiles(newImages: foldersType[]) {
         if (images) {
             const index = images.findIndex(image => image.folderPath === "");
 
             if (index !== -1) {
                 const rootFolder = images[index];
 
-                rootFolder.files.push(...newImages.files);
+                rootFolder.files.push(...newImages[index].files);
 
-                const updatedImages = [...images];
+                const arrayNew = [];
+                if (newImages.length > 1) {
+                    for (let i = 0; i < newImages.length; i++) {
+                        if (i !== index)
+                        {
+                            arrayNew.push(newImages[i]);
+                        }
+                    }
+                }
+
+                const updatedImages = [...images, ...arrayNew];
                 updatedImages[index] = rootFolder;
 
                 setImages(updatedImages);
             } else {
-                setImages([...images, newImages]);
+                setImages([...images, ...newImages]);
             }
         }
     }

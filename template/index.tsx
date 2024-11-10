@@ -66,12 +66,12 @@ export default function Template({ children }: Props): ReactNode {
                                 Обработка
                             </Button>
                         </Link>
-                        <Link href={'/clips'} underline="none">
+                        <Link href={'/archive'} underline="none">
                             <Button
                                 size="md"
                                 {...styleButton}
-                                variant={pathname === '/clips' ? 'primary' : 'tertiary'}
-                                cl={pathname === '/clips' ? theme.colors.base['50'] : theme.colors.primary['200']}>
+                                variant={pathname === '/archive' ? 'primary' : 'tertiary'}
+                                cl={pathname === '/archive' ? theme.colors.base['50'] : theme.colors.primary['200']}>
                                 Архив
                             </Button>
                         </Link>

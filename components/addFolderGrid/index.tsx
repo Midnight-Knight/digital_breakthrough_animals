@@ -1,15 +1,16 @@
-import {AspectRatio, Icon, Text, usePrismaneTheme} from "@prismane/core";
+import {AspectRatio, Icon, PRISMANE_COLORS, Text, usePrismaneTheme} from "@prismane/core";
 import Style from "./style.module.scss";
 import {Folder} from "@phosphor-icons/react";
 import {ChangeEvent} from "react";
 import {foldersType} from "@/pagesClient/download";
-import {buildFileTree} from "@/components/FormDownload";
+import buildFileTreeFileList from "@/utils/buildFileTree/fileList";
 
 interface Props {
     addFolder: (newFolder: foldersType) => void;
+    statusDelete: boolean;
 }
 
-export default function AddFolderGrid({addFolder}: Props) {
+export default function AddFolderGrid({addFolder, statusDelete}: Props) {
     const { theme } = usePrismaneTheme();
 
     const handleFolderChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +32,7 @@ export default function AddFolderGrid({addFolder}: Props) {
                 // Get the FileList from the DataTransfer object
                 const filteredFiles = dataTransfer.files;
 
-                const fileTree = buildFileTree(filteredFiles);
+                const fileTree = buildFileTreeFileList(filteredFiles);
                 addFolder(fileTree[0]);
             }
         } catch (e) {
@@ -39,12 +40,15 @@ export default function AddFolderGrid({addFolder}: Props) {
         }
     };
 
+    const red = {...PRISMANE_COLORS.ruby};
+
     return (
         <AspectRatio w={'100%'} ratio="16/5">
-            <div className={Style.AddFolderGrid} style={{backgroundColor: theme.colors.primary['700']}}>
+            <div className={Style.AddFolderGrid} style={{backgroundColor: statusDelete ? theme.colors.primary['700'] : red['700']}}>
                 <input name={'file'} type="file"
                         // @ts-ignore
                        webkitdirectory="true"
+                       disabled={!statusDelete}
                        onChange={handleFolderChange}/>
                 <div>
                     <div>

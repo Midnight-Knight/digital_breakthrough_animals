@@ -4,56 +4,45 @@ import { FileArrowDown, Folder } from '@phosphor-icons/react';
 import { ChangeEvent, Dispatch, SetStateAction } from 'react';
 import Typewriter from 'typewriter-effect';
 import {foldersType} from "@/pagesClient/download";
+import JSZip from 'jszip';
+import buildFileTreeFileList from "@/utils/buildFileTree/fileList";
+import buildFileTreeArray from "@/utils/buildFileTree/array";
 
 interface Props {
     setImages: Dispatch<SetStateAction<foldersType[] | null>>;
 }
 
-export const buildFileTree = (files: FileList): foldersType[] => {
-    const root: foldersType[] = [];
+export async function unzipFile(file: File, path: string) {
+    try {
+        const zip = new JSZip();
+        const zipContent = await zip.loadAsync(file);
+        const arrayFiles: {path: string, file: File}[] = [];
 
-    const folderMap = new Map<string, foldersType>();
+        // Создаем массив промисов для всех файлов
+        const filePromises: any[] = [];
 
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const pathParts = file.webkitRelativePath.split('/');
-        let currentLevel = root;
-        let currentPath = '';
+        zipContent.forEach((relativePath, zipEntry) => {
+            if (!zipEntry.dir) { // Если это не директория
+                const filePromise = zipEntry.async('blob').then(fileData => {
+                    const pathSegments = relativePath.split('/');
+                    arrayFiles.push({path: path + relativePath, file: new File([fileData], pathSegments[pathSegments.length - 1])});
+                }).catch(error => {
+                    console.error(`Ошибка при извлечении файла ${relativePath}:`, error);
+                });
 
-        for (let j = 0; j < pathParts.length - 1; j++) { // Проходим до предпоследней части пути
-            const part = pathParts[j];
-            if (part === "") continue;
-
-            currentPath += (currentPath ? '/' : '') + part;
-
-            // Проверяем, есть ли уже узел для текущего пути в карте
-            let existingNode = folderMap.get(currentPath);
-
-            if (!existingNode) {
-                existingNode = { folderPath: currentPath, files: [], children: [] };
-                folderMap.set(currentPath, existingNode); // Добавляем в карту, чтобы избежать дублирования
-                currentLevel.push(existingNode); // Добавляем в текущий уровень
+                filePromises.push(filePromise);
             }
+        });
 
-            currentLevel = existingNode.children; // Переходим на следующий уровень
-        }
+        // Дожидаемся завершения всех промисов
+        await Promise.all(filePromises);
 
-        // Обрабатываем сам файл, добавляя его в нужную папку
-        const parentFolderPath = currentPath;
-        let parentFolder = folderMap.get(parentFolderPath);
-
-        if (!parentFolder) {
-            parentFolder = { folderPath: parentFolderPath, files: [], children: [] };
-            folderMap.set(parentFolderPath, parentFolder);
-            currentLevel.push(parentFolder);
-        }
-
-        parentFolder.files.push(file); // Добавляем файл в папку
+        return arrayFiles;
+    } catch (error) {
+        console.error('Ошибка при разархивации:', error);
+        return [];
     }
-
-    return root;
-};
-
+}
 
 
 export default function FormDownload({ setImages }: Props) {
@@ -63,7 +52,7 @@ export default function FormDownload({ setImages }: Props) {
         try {
             const files = event.target.files;
             if (files) {
-                const allowedExtensions = ['.tif', '.jfif', '.jpeg', '.tiff', '.jpg', '.webp', '.png', '.pjpeg'];
+                const allowedExtensions = ['.tif', '.jfif', '.jpeg', '.tiff', '.jpg', '.png', '.pjpeg'];
 
                 // Convert FileList to an array and filter based on allowed extensions
                 const filteredFilesArray = Array.from(files).filter(file => {
@@ -78,7 +67,7 @@ export default function FormDownload({ setImages }: Props) {
                 // Get the FileList from the DataTransfer object
                 const filteredFiles = dataTransfer.files;
 
-                const fileTree = buildFileTree(filteredFiles);
+                const fileTree = buildFileTreeFileList(filteredFiles);
                 setImages(fileTree);
             }
         } catch (e) {
@@ -86,17 +75,40 @@ export default function FormDownload({ setImages }: Props) {
         }
     };
 
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         try {
             const files = event.target.files || null;
             if (files) {
                 const fileArray = Array.from(files);
-                setImages([{folderPath: '', files: fileArray, children: []}]);
+                const zipFiles: File[] = [];
+                const zipTree: foldersType[] = [];
+
+
+                const nonArchiveFiles = fileArray.filter(file => {
+                    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                    if (fileExtension === '.zip') {
+                        zipFiles.push(file);
+                        return false;
+                    }
+                    return true;
+                });
+
+                for (let i = 0; i < zipFiles.length; i++) {
+                    const buffer = await unzipFile(zipFiles[i], zipFiles[i].name + "/");
+                    console.log(buffer.length);
+                    buildFileTreeArray(await unzipFile(zipFiles[i], zipFiles[i].name + "/")).map((elem => {
+                        console.log(elem);
+                        zipTree.push(elem);
+                    }))
+                }
+
+                setImages([{ folderPath: '', files: nonArchiveFiles, children: [] }, ...zipTree]);
             }
         } catch (e) {
             console.error(e);
         }
     };
+
 
     return (
         <Flex w={'100%'} mih={'70vh'} p={'16px'} bg={theme.colors.base['800']} br={'base'} direction={'row'} gap={'16px'}>
@@ -145,7 +157,7 @@ export default function FormDownload({ setImages }: Props) {
                         cursor: 'pointer'
                     }}
                     type="file"
-                    accept=".tif, .jfif, .jpeg, .tiff, .jpg, .webp, .png,  .pjpeg"
+                    accept=".tif, .jfif, .jpeg, .tiff, .jpg, .png, .pjpeg, .zip"
                     multiple={true}
                     onChange={handleFileChange}
                 />
@@ -158,7 +170,7 @@ export default function FormDownload({ setImages }: Props) {
                                 loop: false,
                             }}
                             onInit={(typewriter) => {
-                                typewriter.typeString('Загрузите изображения или архивы (zip, rar, 7z)').start();
+                                typewriter.typeString('Загрузите изображения или архивы (zip)').start();
                             }}
                         />
                     </Text>

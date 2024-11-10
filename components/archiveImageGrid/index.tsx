@@ -1,16 +1,14 @@
-import {AspectRatio, Icon, PRISMANE_COLORS, Text, usePrismaneTheme, Modal} from "@prismane/core";
+import {AspectRatio, Icon, PRISMANE_COLORS, Text, usePrismaneTheme, Modal, Link} from "@prismane/core";
 import Image, {StaticImageData} from "next/image";
 import Style from "./style.module.scss";
-import {Info, Trash} from "@phosphor-icons/react";
+import {Info, Download} from "@phosphor-icons/react";
 import {useState} from "react";
 import {detectionsType} from "@/components/Editor";
 
 interface Props {
-    status: 'loading' | 'ok' | 'falseDetected' | 'trueDetected' | 'nullDetected';
+    status: 'falseDetected' | 'trueDetected' | 'nullDetected';
     title: string;
     image: StaticImageData;
-    statusDelete: boolean;
-    deleteFile: () => void;
     detections: detectionsType[];
 }
 
@@ -51,7 +49,7 @@ function convertToCssCoords(normalizedCoords: NormalizedCoords): CssCoords {
     };
 }
 
-export default function ImageGrid({ title, image, statusDelete, deleteFile, status, detections }: Props)
+export default function ArchiveImageGrid({ title, image, status, detections }: Props)
 {
     const { theme } = usePrismaneTheme();
     const [open, setOpen] = useState(false);
@@ -99,20 +97,16 @@ export default function ImageGrid({ title, image, statusDelete, deleteFile, stat
                 <div className={Style.ImageGrid} style={{outlineColor: status === 'falseDetected' ? red['700'] : status === 'trueDetected' ? green['700'] : status === 'nullDetected' ? yellow['700'] : theme.colors.base['700']}}>
                     <div>
                         <div>
-                            {!statusDelete && (
-                                <button onClick={() => setOpen(true)}>
-                                    <Icon size={'sm'}>
-                                        <Info/>
-                                    </Icon>
-                                </button>
-                            )}
-                            {statusDelete && (
-                                <button onClick={deleteFile}>
-                                    <Icon size={'sm'}>
-                                        <Trash/>
-                                    </Icon>
-                                </button>
-                            )}
+                            <Link href={image.src} download>
+                                <Icon size={'sm'}>
+                                    <Download/>
+                                </Icon>
+                            </Link>
+                            <button onClick={() => setOpen(true)}>
+                                <Icon size={'sm'}>
+                                    <Info/>
+                                </Icon>
+                            </button>
                         </div>
                         <Text w={'100%'} fs={'sm'}>{title}</Text>
                     </div>

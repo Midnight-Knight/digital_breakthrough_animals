@@ -10,22 +10,32 @@
   },
   "dependencies": {
     "@fontsource/inter": "^5.1.0",
+    "@grpc/grpc-js": "^1.12.2",
     "@phosphor-icons/react": "^2.1.7",
     "@prismane/core": "^1.6.0",
+    "7z-wasm": "^1.1.0",
+    "jszip": "^3.10.1",
     "next": "14.2.17",
+    "node-7z": "^3.0.0",
     "prettier": "^3.3.3",
     "react": "^18",
     "react-dom": "^18",
+    "rxjs": "^7.8.1",
     "sass": "^1.80.6",
     "sharp": "^0.33.5",
-    "typewriter-effect": "^2.21.0"
+    "typewriter-effect": "^2.21.0",
+    "unrar.js": "^0.2.5"
   },
   "devDependencies": {
+    "@grpc/proto-loader": "^0.7.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.17",
+    "grpc-tools": "^1.12.4",
+    "ts-proto": "^2.2.5",
+    "ts-protoc-gen": "^0.15.0",
     "typescript": "^5"
   }
 }
